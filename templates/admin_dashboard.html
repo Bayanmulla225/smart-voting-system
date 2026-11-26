@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Admin Dashboard | SmartVote</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+          rel="stylesheet">
+
+    <style>
+
+        body {
+            background: #f1f5fb;
+            font-family: Arial, sans-serif;
+            color: #243247;
+        }
+
+        .navbar {
+            background: #123d70;
+        }
+
+        .navbar-brand {
+            color: white;
+            font-weight: bold;
+            font-size: 21px;
+        }
+
+        .dashboard-title {
+            color: #123d70;
+            font-weight: bold;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 22px;
+            border-radius: 14px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            height: 100%;
+            border-left: 5px solid #315be8;
+        }
+
+        .stat-card.green {
+            border-left-color: #198754;
+        }
+
+        .stat-card.orange {
+            border-left-color: #f0a500;
+        }
+
+        .stat-card.red {
+            border-left-color: #dc3545;
+        }
+
+        .stat-card.purple {
+            border-left-color: #7654c7;
+        }
+
+        .stat-icon {
+            font-size: 25px;
+            color: #315be8;
+        }
+
+        .stat-number {
+            font-size: 30px;
+            font-weight: bold;
+            color: #145cbd;
+            margin-top: 8px;
+        }
+
+        .section-card {
+            background: white;
+            border-radius: 14px;
+            padding: 25px;
+            margin-top: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .section-heading {
+            color: #123d70;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .table th {
+            background: #eaf1fa;
+            color: #123d70;
+            white-space: nowrap;
+        }
+
+        .table td {
+            vertical-align: middle;
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .election-btn {
+            background: #315be8;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .election-btn:hover {
+            background: #2448c7;
+            color: white;
+        }
+
+        .election-card {
+            border: 1px solid #e4eaf2;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: #fff;
+        }
+
+        .election-title {
+            color: #123d70;
+            font-weight: bold;
+        }
+
+        .result-row {
+            padding: 12px 0;
+            border-bottom: 1px solid #edf0f5;
+        }
+
+        .result-row:last-child {
+            border-bottom: none;
+        }
+
+        .candidate-votes {
+            font-size: 19px;
+            font-weight: bold;
+            color: #145cbd;
+        }
+
+        .progress {
+            height: 10px;
+            border-radius: 20px;
+            background: #e8edf5;
+        }
+
+        .progress-bar {
+            border-radius: 20px;
+        }
+
+        .percentage-text {
+            font-weight: bold;
+            color: #198754;
+        }
+
+        .empty-state {
+            background: #f5f8fc;
+            padding: 22px;
+            border-radius: 10px;
+            text-align: center;
+            color: #64748b;
+        }
+
+        @media(max-width: 768px) {
+
+            .section-card {
+                padding: 16px;
+            }
+
+            .stat-number {
+                font-size: 25px;
+            }
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+
+<nav class="navbar navbar-expand-lg">
+
+    <div class="container-fluid px-4">
+
+        <span class="navbar-brand">
+            <i class="bi bi-shield-lock-fill me-2"></i>
+            SmartVote Admin Panel
+        </span>
+
+        <a href="{{ url_for('admin.logout') }}"
+           class="btn btn-light btn-sm">
+
+            <i class="bi bi-box-arrow-right me-1"></i>
+            Logout
+
+        </a>
+
+    </div>
+
+</nav>
+
+
+<div class="container-fluid px-4 py-4">
+
+    <!-- DASHBOARD HEADER -->
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+
+        <div>
+
+            <h2 class="dashboard-title mb-1">
+                Admin Dashboard
+            </h2>
+
+            <p class="text-muted mb-0">
+                Manage voters, elections and voting results.
+            </p>
+
+        </div>
+
+        <a href="{{ url_for('election.list_elections') }}"
+           class="election-btn">
+
+            <i class="bi bi-calendar-event me-2"></i>
+            Election Management
+
+        </a>
+
+    </div>
+
+
+    <!-- FLASH MESSAGES -->
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+
+        {% for category, message in messages %}
+
+            <div class="alert alert-{{ category }} alert-dismissible fade show mt-3">
+
+                {{ message }}
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert">
+                </button>
+
+            </div>
+
+        {% endfor %}
+
+    {% endwith %}
+
+
+    <!-- ================================= -->
+    <!-- VOTER STATISTICS -->
+    <!-- ================================= -->
+
+    <h4 class="section-heading mt-4">
+        <i class="bi bi-people-fill me-2"></i>
+        Voter Statistics
+    </h4>
+
+
+    <div class="row g-3">
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="stat-card">
+
+                <div class="d-flex justify-content-between">
+
+                    <p class="text-muted mb-0">
+                        Total Voters
+                    </p>
+
+                    <i class="bi bi-people stat-icon"></i>
+
+                </div>
+
+                <div class="stat-number">
+                    {{ total_voters }}
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="stat-card orange">
+
+                <div class="d-flex justify-content-between">
+
+                    <p class="text-muted mb-0">
+                        Pending Approval
+                    </p>
+
+                    <i class="bi bi-hourglass-split stat-icon"></i>
+
+                </div>
+
+                <div class="stat-number text-warning">
+                    {{ pending_voters }}
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="stat-card green">
+
+                <div class="d-flex justify-content-between">
+
+                    <p class="text-muted mb-0">
+                        Approved Voters
+                    </p>
+
+                    <i class="bi bi-person-check stat-icon"></i>
+
+                </div>
+
+                <div class="stat-number text-success">
+                    {{ approved_voters }}
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="stat-card red">
+
+                <div class="d-flex justify-content-between">
+
+                    <p class="text-muted mb-0">
+                        Rejected Voters
+                    </p>
+
+                    <i class="bi bi-person-x stat-icon"></i>
+
+                </div>
+
+                <div class="stat-number text-danger">
+                    {{ rejected_voters }}
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================================= -->
+    <!-- ELECTION STATISTICS -->
+    <!-- ================================= -->
+
+    <h4 class="section-heading mt-5">
+
+        <i class="bi bi-bar-chart-fill me-2"></i>
+        Election Statistics
+
+    </h4>
+
+
+    <div class="row g-3">
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="stat-card purple">
+
+                <div class="d-flex justify-content-between">
+
+                    <p class="text-muted mb-0">
+                        Total Elections
+                    </p>
+
+                    <i class="bi bi-calendar-event stat-icon"></i>
+
+                </div>
+
+                <div class="stat-number">
+                    {{ total_elections }}
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="stat-card green">
+
+                <div class="d-flex justify-content-between">
+
+                    <p class="text-muted mb-0">
+                        Total Votes Cast
+                    </p>
+
+                    <i class="bi bi-check2-square stat-icon"></i>
+
+                </div>
+
+                <div class="stat-number text-success">
+                    {{ total_votes }}
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="stat-card">
+
+                <div class="d-flex justify-content-between">
+
+                    <p class="text-muted mb-0">
+                        Active Elections
+                    </p>
+
+                    <i class="bi bi-broadcast stat-icon"></i>
+
+                </div>
+
+                <div class="stat-number">
+                    {{ active_elections }}
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="stat-card orange">
+
+                <div class="d-flex justify-content-between">
+
+                    <p class="text-muted mb-0">
+                        Completed Elections
+                    </p>
+
+                    <i class="bi bi-flag stat-icon"></i>
+
+                </div>
+
+                <div class="stat-number text-warning">
+                    {{ completed_elections }}
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================================= -->
+    <!-- OVERALL VOTING PARTICIPATION -->
+    <!-- ================================= -->
+
+    <div class="section-card">
+
+        <h4 class="section-heading">
+
+            <i class="bi bi-pie-chart-fill me-2"></i>
+            Overall Voting Participation
+
+        </h4>
+
+
+        <div class="row g-4">
+
+            <div class="col-md-4">
+
+                <p class="text-muted mb-1">
+                    Total Eligible Voters
+                </p>
+
+                <h3 class="fw-bold text-primary">
+                    {{ total_eligible_voters }}
+                </h3>
+
+            </div>
+
+
+            <div class="col-md-4">
+
+                <p class="text-muted mb-1">
+                    Remaining Voters
+                </p>
+
+                <h3 class="fw-bold text-warning">
+                    {{ total_remaining_voters }}
+                </h3>
+
+            </div>
+
+
+            <div class="col-md-4">
+
+                <p class="text-muted mb-1">
+                    Overall Voting Percentage
+                </p>
+
+                <h3 class="fw-bold text-success">
+                    {{ overall_voting_percentage|default(0) }}%
+                </h3>
+
+            </div>
+
+        </div>
+
+
+        <div class="progress mt-3">
+
+            <div class="progress-bar bg-success"
+                 role="progressbar"
+                 data-progress="{{ [overall_voting_percentage, 100]|min }}"
+                 aria-valuenow="{{ overall_voting_percentage }}"
+                 aria-valuemin="0"
+                 aria-valuemax="100">
+            </div>
+
+        </div>
+
+        <small class="text-muted mt-2 d-block">
+            Overall turnout is calculated from eligible voter counts
+            across the elections displayed below.
+        </small>
+
+    </div>
+
+
+    <!-- ================================= -->
+    <!-- ELECTION-WISE RESULTS -->
+    <!-- ================================= -->
+
+    <div class="section-card">
+
+        <h4 class="section-heading">
+
+            <i class="bi bi-clipboard-data-fill me-2"></i>
+            Election-wise Voting Results
+
+        </h4>
+
+
+        {% if election_stats %}
+
+            {% for election in election_stats %}
+
+                <div class="election-card">
+
+                    <!-- ELECTION HEADER -->
+
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+
+                        <div>
+
+                            <h5 class="election-title mb-1">
+                                {{ election.title }}
+                            </h5>
+
+                            <span class="text-muted small">
+                                Election ID: {{ election.id }}
+                            </span>
+
+                        </div>
+
+
+                        <div>
+
+                            {% if election.status == "active" %}
+
+                                <span class="badge bg-success">
+                                    Active
+                                </span>
+
+                            {% elif election.status == "upcoming" %}
+
+                                <span class="badge bg-primary">
+                                    Upcoming
+                                </span>
+
+                            {% elif election.status == "completed" %}
+
+                                <span class="badge bg-secondary">
+                                    Completed
+                                </span>
+
+                            {% elif election.status == "archived" %}
+
+                                <span class="badge bg-dark">
+                                    Archived
+                                </span>
+
+                            {% else %}
+
+                                <span class="badge bg-warning text-dark">
+                                    Unknown
+                                </span>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ELECTION COUNTERS -->
+
+                    <div class="row g-3 mt-2">
+
+                        <div class="col-md-3 col-6">
+
+                            <div class="p-3 rounded bg-light">
+
+                                <small class="text-muted">
+                                    Total Votes
+                                </small>
+
+                                <h4 class="fw-bold text-primary mb-0">
+                                    {{ election.total_votes }}
+                                </h4>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-3 col-6">
+
+                            <div class="p-3 rounded bg-light">
+
+                                <small class="text-muted">
+                                    Eligible Voters
+                                </small>
+
+                                <h4 class="fw-bold mb-0">
+                                    {{ election.eligible_voters }}
+                                </h4>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-3 col-6">
+
+                            <div class="p-3 rounded bg-light">
+
+                                <small class="text-muted">
+                                    Remaining Voters
+                                </small>
+
+                                <h4 class="fw-bold text-warning mb-0">
+                                    {{ election.remaining_voters }}
+                                </h4>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-3 col-6">
+
+                            <div class="p-3 rounded bg-light">
+
+                                <small class="text-muted">
+                                    Voting Percentage
+                                </small>
+
+                                <h4 class="fw-bold text-success mb-0">
+                                    {{ election.voting_percentage }}%
+                                </h4>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ELECTION PROGRESS -->
+
+                    <div class="mt-3">
+
+                        <div class="d-flex justify-content-between mb-2">
+
+                            <strong class="small">
+                                Voting Progress
+                            </strong>
+
+                            <span class="percentage-text small">
+                                {{ election.voting_percentage }}%
+                            </span>
+
+                        </div>
+
+
+                        <div class="progress">
+
+                            <div class="progress-bar bg-success"
+                                 role="progressbar"
+                                 data-progress="{{ [election.voting_percentage, 100]|min }}"
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- CANDIDATE RESULTS -->
+
+                    <div class="mt-4">
+
+                        <h6 class="fw-bold text-dark mb-3">
+
+                            <i class="bi bi-people-fill me-2"></i>
+                            Candidate-wise Vote Count
+
+                        </h6>
+
+
+                        {% if election.candidates %}
+
+                            {% for candidate in election.candidates %}
+
+                                <div class="result-row">
+
+                                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+
+                                        <div>
+
+                                            <strong>
+                                                {{ candidate.name }}
+                                            </strong>
+
+                                            <div class="small text-muted">
+
+                                                {{ candidate.party }}
+
+                                                {% if candidate.constituency %}
+                                                    | {{ candidate.constituency }}
+                                                {% endif %}
+
+                                                {% if candidate.symbol %}
+                                                    | Symbol: {{ candidate.symbol }}
+                                                {% endif %}
+
+                                            </div>
+
+                                        </div>
+
+
+                                        <div class="candidate-votes">
+
+                                            {{ candidate.votes }}
+
+                                            <small class="text-muted fs-6">
+                                                votes
+                                            </small>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    {% if election.total_votes > 0 %}
+
+                                        <div class="progress mt-2">
+
+                                            <div class="progress-bar bg-primary"
+                                                 role="progressbar"
+                                                 data-progress="{{ (candidate.votes / election.total_votes * 100)|round(2) }}"
+                                            </div>
+
+                                        </div>
+
+                                        <small class="text-muted">
+
+                                            {{ (candidate.votes / election.total_votes * 100)|round(2) }}%
+                                            of votes in this election
+
+                                        </small>
+
+                                    {% else %}
+
+                                        <small class="text-muted">
+                                            No votes received yet.
+                                        </small>
+
+                                    {% endif %}
+
+                                </div>
+
+                            {% endfor %}
+
+                        {% else %}
+
+                            <div class="empty-state">
+                                No candidates added to this election yet.
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <div class="empty-state">
+
+                <i class="bi bi-calendar-x fs-2"></i>
+
+                <p class="mb-0 mt-2">
+                    No elections available.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- ================================= -->
+    <!-- PENDING VOTERS -->
+    <!-- ================================= -->
+
+    <div class="section-card">
+
+        <h4 class="section-heading">
+
+            <i class="bi bi-person-exclamation me-2"></i>
+            Pending Voter Registrations
+
+        </h4>
+
+
+        {% if pending_list %}
+
+            <div class="table-responsive">
+
+                <table class="table table-bordered table-hover">
+
+                    <thead>
+
+                        <tr>
+                            <th>#</th>
+                            <th>Full Name</th>
+                            <th>Email</th>
+                            <th>Mobile</th>
+                            <th>Voter ID</th>
+                            <th>Action</th>
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for voter in pending_list %}
+
+                            <tr>
+
+                                <td>
+                                    {{ loop.index }}
+                                </td>
+
+                                <td>
+                                    {{ voter.get('full_name', 'N/A') }}
+                                </td>
+
+                                <td>
+                                    {{ voter.get('email', 'N/A') }}
+                                </td>
+
+                                <td>
+                                    {{ voter.get('mobile', 'N/A') }}
+                                </td>
+
+                                <td>
+                                    {{ voter.get('epic') or voter.get('epic_normalized') or voter.get('voter_id', 'N/A') }}
+                                </td>
+
+                                <td>
+
+                                    <div class="d-flex flex-column gap-2">
+
+                                        <div class="small">
+                                            <strong>Taluk:</strong>
+                                            {{ voter.get('taluk', 'Not provided') }}
+                                        </div>
+
+
+                                        <div class="action-buttons">
+
+                                            <a class="btn btn-outline-primary btn-sm"
+                                               target="_blank"
+                                               href="{{ url_for('admin.view_voter_document', voter_id=voter._id, side='front') }}">
+
+                                                View ID Front
+
+                                            </a>
+
+
+                                            <a class="btn btn-outline-primary btn-sm"
+                                               target="_blank"
+                                               href="{{ url_for('admin.view_voter_document', voter_id=voter._id, side='back') }}">
+
+                                                View ID Back
+
+                                            </a>
+
+
+                                            <a href="{{ url_for('admin.voter_details', voter_id=voter._id) }}"
+                                               class="btn btn-primary btn-sm">
+
+                                                View Details
+
+                                            </a>
+
+
+                                            <form method="POST"
+                                                  action="{{ url_for('admin.approve_voter', voter_id=voter._id) }}">
+
+                                                <input type="hidden"
+                                                       name="csrf_token"
+                                                       value="{{ csrf_token() }}">
+
+                                                <button class="btn btn-success btn-sm"
+                                                        type="submit">
+
+                                                    Approve
+
+                                                </button>
+
+                                            </form>
+
+
+                                            <form method="POST"
+                                                  action="{{ url_for('admin.reject_voter', voter_id=voter._id) }}"
+                                                  onsubmit="return confirm('Are you sure you want to reject this voter?');">
+
+                                                <input type="hidden"
+                                                       name="csrf_token"
+                                                       value="{{ csrf_token() }}">
+
+                                                <button class="btn btn-danger btn-sm"
+                                                        type="submit">
+
+                                                    Reject
+
+                                                </button>
+
+                                            </form>
+
+
+                                            <form method="POST"
+                                                  action="{{ url_for('admin.delete_voter', voter_id=voter._id) }}"
+                                                  onsubmit="return confirm('Are you sure you want to permanently delete this voter?');">
+
+                                                <input type="hidden"
+                                                       name="csrf_token"
+                                                       value="{{ csrf_token() }}">
+
+                                                <button type="submit"
+                                                        class="btn btn-danger btn-sm">
+
+                                                    Delete Voter
+
+                                                </button>
+
+                                            </form>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <div class="alert alert-info">
+                No pending voter registrations available.
+            </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- ================================= -->
+    <!-- APPROVED VOTERS -->
+    <!-- ================================= -->
+
+    <div class="section-card">
+
+        <h4 class="section-heading">
+
+            <i class="bi bi-person-check-fill me-2"></i>
+            Approved Voters
+
+        </h4>
+
+
+        {% if approved_list %}
+
+            <div class="table-responsive">
+
+                <table class="table table-bordered table-hover">
+
+                    <thead>
+
+                        <tr>
+                            <th>#</th>
+                            <th>Full Name</th>
+                            <th>Email</th>
+                            <th>Mobile</th>
+                            <th>Voter ID</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for voter in approved_list %}
+
+                            <tr>
+
+                                <td>
+                                    {{ loop.index }}
+                                </td>
+
+                                <td>
+                                    {{ voter.get('full_name', 'N/A') }}
+                                </td>
+
+                                <td>
+                                    {{ voter.get('email', 'N/A') }}
+                                </td>
+
+                                <td>
+                                    {{ voter.get('mobile', 'N/A') }}
+                                </td>
+
+                                <td>
+                                    {{ voter.get('epic') or voter.get('epic_normalized') or voter.get('voter_id', 'N/A') }}
+                                </td>
+
+                                <td>
+
+                                    <span class="badge bg-success">
+                                        Approved
+                                    </span>
+
+                                </td>
+
+                                <td>
+
+                                    <div class="action-buttons">
+
+                                        <a href="{{ url_for('admin.voter_details', voter_id=voter._id) }}"
+                                           class="btn btn-primary btn-sm">
+
+                                            View Details
+
+                                        </a>
+
+
+                                        {% if voter.get('documents', {}).get('epic_front') %}
+
+                                            <a href="{{ url_for('admin.view_voter_document', voter_id=voter._id, side='front') }}"
+                                               target="_blank"
+                                               class="btn btn-outline-primary btn-sm">
+
+                                                View ID Front
+
+                                            </a>
+
+                                        {% endif %}
+
+
+                                        {% if voter.get('documents', {}).get('epic_back') %}
+
+                                            <a href="{{ url_for('admin.view_voter_document', voter_id=voter._id, side='back') }}"
+                                               target="_blank"
+                                               class="btn btn-outline-primary btn-sm">
+
+                                                View ID Back
+
+                                            </a>
+
+                                        {% endif %}
+
+
+                                        <form method="POST"
+                                              action="{{ url_for('admin.delete_voter', voter_id=voter._id) }}"
+                                              onsubmit="return confirm('Are you sure you want to permanently delete this voter?');">
+
+                                            <input type="hidden"
+                                                   name="csrf_token"
+                                                   value="{{ csrf_token() }}">
+
+                                            <button type="submit"
+                                                    class="btn btn-danger btn-sm">
+
+                                                Delete Voter
+
+                                            </button>
+
+                                        </form>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <div class="alert alert-info">
+                No approved voter records available.
+            </div>
+
+        {% endif %}
+
+    </div>
+
+
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    document.querySelectorAll("[data-progress]").forEach(function (bar) {
+
+        let value = Number(bar.dataset.progress);
+
+        if (!Number.isFinite(value)) {
+            value = 0;
+        }
+
+        value = Math.min(100, Math.max(0, value));
+
+        bar.style.width = value + "%";
+
+    });
+
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+.env
+.env.*
+!.env.example
+
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+
+instance/
+*.db
+*.sqlite
+*.sqlite3
+
+uploads/
+logs/
+*.log
+
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+node_modules/
+
+private_uploads/
+
+# Old backup files
+*_backup.py
+*_before_*.py
+config_before_otp.py
+
+# OTP testing scripts
+test_2factor*.py
+
+# Ignore uploaded candidate images and other user uploads
+static/uploads/
+
+# Ignore backup HTML files
+*_backup.html
+*_before_*.html
+
+# Python cache
+__pycache__/
+*.pyc

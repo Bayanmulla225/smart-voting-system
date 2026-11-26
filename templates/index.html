@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SmartVote | Smart Voting System</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #142b50;
+            --secondary: #245b98;
+            --accent: #e7b95c;
+            --light: #f4f7fc;
+            --dark: #172b4d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: white;
+            color: #344054;
+        }
+
+        /* NAVBAR */
+
+        .navbar {
+            background: var(--primary);
+            padding: 17px 6%;
+            box-shadow: 0 3px 15px rgba(0,0,0,.12);
+        }
+
+        .navbar-brand {
+            color: white !important;
+            font-size: 25px;
+            font-weight: 800;
+        }
+
+        .navbar-brand i {
+            color: var(--accent);
+        }
+
+        .navbar-nav {
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-link {
+            color: #fff !important;
+            font-size: 14px;
+            font-weight: 500;
+            transition: .3s;
+        }
+
+        .nav-link:hover {
+            color: var(--accent) !important;
+        }
+
+        .nav-register {
+            border: 1px solid white;
+            border-radius: 7px;
+            padding: 9px 17px !important;
+        }
+
+        .nav-login {
+            background: var(--accent);
+            color: var(--primary) !important;
+            padding: 10px 18px !important;
+            border-radius: 7px;
+            font-weight: 700;
+        }
+
+        .nav-login:hover {
+            background: white;
+            color: var(--primary) !important;
+        }
+
+        /* HERO */
+
+        .hero {
+            min-height: 610px;
+            display: flex;
+            align-items: center;
+            background:
+                linear-gradient(115deg,
+                rgba(13,34,67,.98),
+                rgba(34,89,147,.91));
+            color: white;
+            padding: 85px 7%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-content {
+            max-width: 720px;
+        }
+
+        .hero-tag {
+            display: inline-block;
+            padding: 9px 17px;
+            border-radius: 30px;
+            background: rgba(255,255,255,.12);
+            color: #f6d88e;
+            margin-bottom: 25px;
+            font-size: 13px;
+        }
+
+        .hero h1 {
+            font-size: clamp(38px, 5vw, 62px);
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 22px;
+        }
+
+        .hero h1 span {
+            color: var(--accent);
+        }
+
+        .hero p {
+            font-size: 17px;
+            line-height: 1.9;
+            color: #e1eaf7;
+            max-width: 650px;
+            margin-bottom: 30px;
+        }
+
+        .btn-main {
+            background: var(--accent);
+            color: var(--primary);
+            padding: 14px 25px;
+            border-radius: 7px;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-block;
+            transition: .3s;
+        }
+
+        .btn-main:hover {
+            background: white;
+            color: var(--primary);
+            transform: translateY(-3px);
+        }
+
+        .btn-outline {
+            border: 1px solid white;
+            color: white;
+            padding: 13px 24px;
+            border-radius: 7px;
+            text-decoration: none;
+            display: inline-block;
+            margin-left: 10px;
+        }
+
+        .btn-outline:hover {
+            background: white;
+            color: var(--primary);
+        }
+
+        .hero-card {
+            background: white;
+            color: var(--primary);
+            padding: 40px 25px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 15px 45px rgba(0,0,0,.2);
+        }
+
+        .hero-card-icon {
+            width: 95px;
+            height: 95px;
+            background: #edf3fb;
+            color: var(--secondary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 42px;
+            margin: 0 auto 20px;
+        }
+
+        .hero-card p {
+            color: #5b6780;
+            line-height: 1.7;
+        }
+
+        /* COMMON SECTION */
+
+        .section {
+            padding: 85px 7%;
+        }
+
+        .section-heading {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .section-heading h2 {
+            color: var(--primary);
+            font-weight: 800;
+            font-size: 34px;
+        }
+
+        .section-heading p {
+            color: #697586;
+            margin-top: 12px;
+        }
+
+        .heading-line {
+            width: 65px;
+            height: 4px;
+            background: var(--accent);
+            margin: 15px auto;
+            border-radius: 10px;
+        }
+
+        /* ABOUT */
+
+        .about-section {
+            background: white;
+        }
+
+        .about-box {
+            background: var(--light);
+            padding: 35px;
+            border-radius: 15px;
+            height: 100%;
+        }
+
+        .about-box h3 {
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 18px;
+        }
+
+        .about-box p {
+            line-height: 1.9;
+            color: #596579;
+        }
+
+        .about-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .about-list li {
+            margin: 16px 0;
+            color: #475467;
+        }
+
+        .about-list i {
+            color: #20845b;
+            margin-right: 10px;
+        }
+
+        /* FEATURES */
+
+        .features-section {
+            background: var(--light);
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 13px;
+            padding: 30px 24px;
+            height: 100%;
+            border: 1px solid #edf0f5;
+            transition: .3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-7px);
+            box-shadow: 0 12px 30px rgba(20,43,80,.1);
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: #eaf1fb;
+            color: var(--secondary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 25px;
+            margin-bottom: 22px;
+        }
+
+        .feature-card h5 {
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .feature-card p {
+            color: #667085;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        /* HOW IT WORKS */
+
+        .steps-section {
+            background: white;
+        }
+
+        .step-card {
+            text-align: center;
+            padding: 25px 15px;
+        }
+
+        .step-number {
+            width: 65px;
+            height: 65px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 20px;
+            font-size: 23px;
+            font-weight: 700;
+        }
+
+        .step-card h5 {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .step-card p {
+            color: #667085;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        /* ELECTIONS */
+
+        .election-section {
+            background: var(--light);
+        }
+
+        .election-box {
+            background: white;
+            border: 1px solid #e6eaf0;
+            border-radius: 13px;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .election-box i {
+            font-size: 35px;
+            color: var(--secondary);
+            margin-bottom: 15px;
+        }
+
+        .election-box h5 {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        /* SECURITY */
+
+        .security-section {
+            background: var(--primary);
+            color: white;
+            padding: 65px 7%;
+            text-align: center;
+        }
+
+        .security-section h2 {
+            font-weight: 800;
+            margin-bottom: 15px;
+        }
+
+        .security-section p {
+            color: #d8e3f2;
+            line-height: 1.8;
+            max-width: 800px;
+            margin: auto;
+        }
+
+        /* CONTACT */
+
+        .contact-section {
+            background: white;
+        }
+
+        .contact-box {
+            background: var(--light);
+            padding: 30px;
+            border-radius: 13px;
+            height: 100%;
+        }
+
+        .contact-box i {
+            color: var(--secondary);
+            font-size: 26px;
+            margin-bottom: 15px;
+        }
+
+        .contact-box h5 {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        /* FOOTER */
+
+        footer {
+            background: #0c1d38;
+            color: white;
+            padding: 45px 7% 20px;
+        }
+
+        footer h4 {
+            font-weight: 800;
+            margin-bottom: 15px;
+        }
+
+        footer p {
+            color: #b8c5d8;
+            line-height: 1.8;
+        }
+
+        footer a {
+            color: #d4dfed;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 11px;
+        }
+
+        footer a:hover {
+            color: var(--accent);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #34445d;
+            margin-top: 30px;
+            padding-top: 20px;
+            text-align: center;
+            color: #b8c5d8;
+            font-size: 13px;
+        }
+
+        /* RESPONSIVE */
+
+        @media(max-width: 991px) {
+            .navbar-nav {
+                align-items: stretch;
+                padding-top: 15px;
+            }
+
+            .hero {
+                text-align: center;
+            }
+
+            .hero-card {
+                margin-top: 45px;
+            }
+
+            .btn-outline {
+                margin: 12px 0 0;
+            }
+        }
+
+        @media(max-width: 576px) {
+            .hero {
+                padding: 65px 6%;
+            }
+
+            .hero h1 {
+                font-size: 37px;
+            }
+
+            .section {
+                padding: 60px 6%;
+            }
+
+            .section-heading h2 {
+                font-size: 27px;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+
+<!-- NAVIGATION BAR -->
+
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+
+    <div class="container-fluid">
+
+        <a class="navbar-brand" href="/">
+            <i class="fa-solid fa-shield-halved"></i>
+            SmartVote
+        </a>
+
+        <button class="navbar-toggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#mainNavbar">
+
+            <span class="navbar-toggler-icon"></span>
+
+        </button>
+
+        <div class="collapse navbar-collapse" id="mainNavbar">
+
+            <ul class="navbar-nav ms-auto">
+
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Home</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="#about">About Us</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="#how-it-works">How It Works</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="#features">Features</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="#elections">Active Elections</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="#contact">Contact</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link nav-register"
+                       href="{{ url_for('auth.register') }}">
+                        Register
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link nav-login"
+                       href="{{ url_for('auth.login') }}">
+                        Voter Login
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                       href="/admin/login">
+                        Admin Login
+                    </a>
+                </li>
+
+            </ul>
+
+        </div>
+
+    </div>
+
+</nav>
+
+
+<!-- HERO SECTION -->
+
+<section class="hero">
+
+    <div class="container-fluid">
+
+        <div class="row align-items-center">
+
+            <div class="col-lg-7">
+
+                <div class="hero-content">
+
+                    <div class="hero-tag">
+                        <i class="fa-solid fa-lock"></i>
+                        Smart • Secure • Transparent
+                    </div>
+
+                    <h1>
+                        The Future of
+                        <span>Smart Voting</span>
+                    </h1>
+
+                    <p>
+                        Experience a modern digital voting platform
+                        powered by Face Recognition, Artificial
+                        Intelligence, GPS Tracking and Blockchain
+                        technology.
+                    </p>
+
+                    <a href="{{ url_for('auth.register') }}"
+                       class="btn-main">
+
+                        <i class="fa-solid fa-user-plus"></i>
+                        Register Now
+
+                    </a>
+
+                    <a href="{{ url_for('auth.login') }}"
+                       class="btn-outline">
+
+                        <i class="fa-solid fa-right-to-bracket"></i>
+                        Voter Login
+
+                    </a>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-5">
+
+                <div class="hero-card">
+
+                    <div class="hero-card-icon">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+
+                    <h3>Secure Digital Voting</h3>
+
+                    <p>
+                        A technology-driven academic project
+                        demonstrating identity verification,
+                        secure voting workflows and
+                        tamper-evident records.
+                    </p>
+
+                    <hr>
+
+                    <h6>
+                        <i class="fa-solid fa-check-circle text-success"></i>
+                        Security
+                        &nbsp; • &nbsp;
+                        Transparency
+                        &nbsp; • &nbsp;
+                        Trust
+                    </h6>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ABOUT SECTION -->
+
+<section class="section about-section" id="about">
+
+    <div class="section-heading">
+
+        <h2>About Our Project</h2>
+
+        <div class="heading-line"></div>
+
+        <p>
+            Understanding the next generation of digital voting.
+        </p>
+
+    </div>
+
+    <div class="container-fluid">
+
+        <div class="row g-4">
+
+            <div class="col-lg-6">
+
+                <div class="about-box">
+
+                    <h3>
+                        <i class="fa-solid fa-landmark"></i>
+                        Smart Voting System
+                    </h3>
+
+                    <p>
+                        Smart Voting System is a final-year
+                        engineering project designed to demonstrate
+                        a secure and modern digital voting platform.
+                    </p>
+
+                    <p>
+                        It integrates biometric verification,
+                        multi-factor authentication, location
+                        capture and blockchain technology to
+                        explore security and transparency in
+                        digital election workflows.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-6">
+
+                <div class="about-box">
+
+                    <h3>Our Technology</h3>
+
+                    <ul class="about-list">
+
+                        <li>
+                            <i class="fa-solid fa-check-circle"></i>
+                            AI-Based Face Recognition
+                        </li>
+
+                        <li>
+                            <i class="fa-solid fa-check-circle"></i>
+                            Liveness Detection
+                        </li>
+
+                        <li>
+                            <i class="fa-solid fa-check-circle"></i>
+                            SMS OTP Authentication
+                        </li>
+
+                        <li>
+                            <i class="fa-solid fa-check-circle"></i>
+                            GPS Location Tracking
+                        </li>
+
+                        <li>
+                            <i class="fa-solid fa-check-circle"></i>
+                            Hyperledger Fabric Blockchain
+                        </li>
+
+                    </ul>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- HOW IT WORKS -->
+
+<section class="section steps-section" id="how-it-works">
+
+    <div class="section-heading">
+
+        <h2>How It Works</h2>
+
+        <div class="heading-line"></div>
+
+        <p>
+            Understand the digital voting process step by step.
+        </p>
+
+    </div>
+
+    <div class="container-fluid">
+
+        <div class="row g-4">
+
+            <div class="col-md-3">
+
+                <div class="step-card">
+
+                    <div class="step-number">01</div>
+
+                    <h5>Registration</h5>
+
+                    <p>
+                        Voters submit their information
+                        and registration details.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-3">
+
+                <div class="step-card">
+
+                    <div class="step-number">02</div>
+
+                    <h5>Verification</h5>
+
+                    <p>
+                        Identity checks, face verification
+                        and OTP authentication.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-3">
+
+                <div class="step-card">
+
+                    <div class="step-number">03</div>
+
+                    <h5>Cast Your Vote</h5>
+
+                    <p>
+                        Eligible voters can select
+                        their preferred candidate.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-3">
+
+                <div class="step-card">
+
+                    <div class="step-number">04</div>
+
+                    <h5>Blockchain Record</h5>
+
+                    <p>
+                        Voting transactions are recorded
+                        using the blockchain integration.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- FEATURES SECTION -->
+
+<section class="section features-section" id="features">
+
+    <div class="section-heading">
+
+        <h2>Our Key Features</h2>
+
+        <div class="heading-line"></div>
+
+        <p>
+            Advanced technologies planned for our voting platform.
+        </p>
+
+    </div>
+
+    <div class="container-fluid">
+
+        <div class="row g-4">
+
+            <div class="col-lg-4 col-md-6">
+
+                <div class="feature-card">
+
+                    <div class="feature-icon">
+                        <i class="fa-solid fa-face-smile"></i>
+                    </div>
+
+                    <h5>Face Recognition</h5>
+
+                    <p>
+                        AI-based facial verification using
+                        FaceNet512 to support voter identity checks.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+
+                <div class="feature-card">
+
+                    <div class="feature-icon">
+                        <i class="fa-solid fa-eye"></i>
+                    </div>
+
+                    <h5>Liveness Detection</h5>
+
+                    <p>
+                        Motion and facial checks designed to
+                        help detect basic photo and replay attacks.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+
+                <div class="feature-card">
+
+                    <div class="feature-icon">
+                        <i class="fa-solid fa-mobile-screen"></i>
+                    </div>
+
+                    <h5>SMS OTP Verification</h5>
+
+                    <p>
+                        Additional account verification through
+                        one-time passwords sent by SMS.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+
+                <div class="feature-card">
+
+                    <div class="feature-icon">
+                        <i class="fa-solid fa-location-dot"></i>
+                    </div>
+
+                    <h5>GPS Tracking</h5>
+
+                    <p>
+                        Permission-based GPS location capture
+                        for registration and voting activity review.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+
+                <div class="feature-card">
+
+                    <div class="feature-icon">
+                        <i class="fa-solid fa-link"></i>
+                    </div>
+
+                    <h5>Blockchain Security</h5>
+
+                    <p>
+                        Hyperledger Fabric integration for
+                        tamper-evident transaction records.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+
+                <div class="feature-card">
+
+                    <div class="feature-icon">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+
+                    <h5>Admin Dashboard</h5>
+
+                    <p>
+                        Centralized administration, voter review,
+                        election management and activity monitoring.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ACTIVE ELECTIONS -->
+
+<section class="section election-section" id="elections">
+
+    <div class="section-heading">
+
+        <h2>Active Elections</h2>
+
+        <div class="heading-line"></div>
+
+        <p>
+            View available election information.
+        </p>
+
+    </div>
+
+    <div class="container-fluid">
+
+        <div class="row justify-content-center">
+
+            <div class="col-lg-6">
+
+                <div class="election-box">
+
+                    <i class="fa-solid fa-vote-yea"></i>
+
+                    <h5>Election Portal</h5>
+
+                    <p class="text-muted">
+                        Election listings will appear here
+                        when an administrator creates and
+                        publishes an election.
+                    </p>
+
+                    <span class="badge bg-secondary">
+                        No published elections
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- SECURITY SECTION -->
+
+<section class="security-section">
+
+    <div class="container">
+
+        <h2>
+            <i class="fa-solid fa-shield-halved"></i>
+            Security & Transparency
+        </h2>
+
+        <p>
+            Our project explores secure authentication,
+            privacy-conscious data management, duplicate
+            voting prevention and blockchain-based
+            tamper-evident records.
+        </p>
+
+    </div>
+
+</section>
+
+
+<!-- CONTACT SECTION -->
+
+<section class="section contact-section" id="contact">
+
+    <div class="section-heading">
+
+        <h2>Contact Us</h2>
+
+        <div class="heading-line"></div>
+
+        <p>
+            Have questions about our project?
+        </p>
+
+    </div>
+
+    <div class="container-fluid">
+
+        <div class="row g-4 justify-content-center">
+
+            <div class="col-md-4">
+
+                <div class="contact-box text-center">
+
+                    <i class="fa-solid fa-envelope"></i>
+
+                    <h5>Email Support</h5>
+
+                    <p class="text-muted">
+                        Contact information will be provided
+                        by the project administrator.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-4">
+
+                <div class="contact-box text-center">
+
+                    <i class="fa-solid fa-user-shield"></i>
+
+                    <h5>Admin Support</h5>
+
+                    <p class="text-muted">
+                        For registration and verification
+                        assistance, contact the administrator.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- FOOTER -->
+
+<footer>
+
+    <div class="container-fluid">
+
+        <div class="row g-4">
+
+            <div class="col-lg-5">
+
+                <h4>
+                    <i class="fa-solid fa-shield-halved"
+                       style="color:#e7b95c"></i>
+                    SmartVote
+                </h4>
+
+                <p>
+                    A final-year engineering project
+                    demonstrating smart digital voting
+                    technologies using AI, biometric
+                    verification, GPS and blockchain.
+                </p>
+
+            </div>
+
+            <div class="col-lg-3">
+
+                <h5>Quick Links</h5>
+
+                <a href="/">Home</a>
+                <a href="#about">About Us</a>
+                <a href="#features">Features</a>
+                <a href="#contact">Contact</a>
+
+            </div>
+
+            <div class="col-lg-4">
+
+                <h5>Account</h5>
+
+                <a href="{{ url_for('auth.register') }}">
+                    Voter Registration
+                </a>
+
+                <a href="{{ url_for('auth.login') }}">
+                    Voter Login
+                </a>
+
+                <a href="/admin/login">
+                    Admin Login
+                </a>
+
+            </div>
+
+        </div>
+
+        <div class="footer-bottom">
+
+            © 2026 SmartVote. Final Year Engineering Project.
+            All Rights Reserved.
+
+        </div>
+
+    </div>
+
+</footer>
+
+
+<!-- BOOTSTRAP JS -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+</script>
+
+</body>
+</html>

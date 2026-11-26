@@ -1,0 +1,1795 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voter Dashboard | SmartVote</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <style>
+        body {
+            background: #f3f6fb;
+            font-family: Arial, sans-serif;
+        }
+
+        .navbar {
+            background: #142b55;
+        }
+
+        .main-card {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.08);
+        }
+
+        .section-title {
+            color: #142b55;
+            font-weight: 700;
+        }
+
+        .camera-box {
+            background: #edf2fa;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        video {
+            width: 100%;
+            max-width: 480px;
+            border-radius: 12px;
+            background: #111;
+        }
+
+        .feature-card {
+            height: 100%;
+            border: 1px solid #e4eaf3;
+            border-radius: 12px;
+            padding: 18px;
+            background: white;
+        }
+
+        .status-box {
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            background: white;
+            border: 1px solid #dce5f2;
+        }
+
+        .challenge-text {
+            font-size: 18px;
+            font-weight: bold;
+            color: #142b55;
+        }
+
+        .progress {
+            height: 12px;
+            border-radius: 10px;
+        }
+
+        .btn-primary {
+            background: #244d91;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background: #18396f;
+        }
+
+        #registrationPreview {
+            display: none;
+            width: 100%;
+            max-width: 450px;
+            border-radius: 12px;
+            margin: auto;
+        }
+
+        #resultBox {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .gps-info {
+            background: #f8faff;
+            border: 1px solid #dce5f2;
+            border-radius: 12px;
+            padding: 18px;
+        }
+
+        .gps-value {
+            font-weight: bold;
+            color: #142b55;
+            word-break: break-word;
+        }
+
+        .gps-label {
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        #gpsResult {
+            display: none;
+        }
+
+        .candidate-link-card {
+            background: linear-gradient(135deg, #ffffff, #edf3ff);
+            border: 1px solid #dce5f2;
+            border-radius: 14px;
+            padding: 22px;
+        }
+
+        .camera-instructions {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        #livenessVideo {
+            display: none;
+            width: 100%;
+            max-width: 480px;
+            min-height: 300px;
+            object-fit: cover;
+            border-radius: 12px;
+            background: #111;
+            transform: scaleX(-1);
+            margin: 0 auto;
+        }
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar navbar-dark px-4 py-3">
+    <span class="navbar-brand fw-bold">
+        SmartVote Voter Dashboard
+    </span>
+
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('auth.view_candidates') }}"
+           class="btn btn-outline-light btn-sm">
+            View Candidates
+        </a>
+
+        <a href="{{ url_for('auth.logout') }}"
+           class="btn btn-light btn-sm">
+            Logout
+        </a>
+    </div>
+</nav>
+
+<div class="container py-5">
+
+    <!-- CONFIGURATION -->
+
+    <div id="faceConfig"
+         data-face-registered="{{ 'true' if voter.get('face_embedding') else 'false' }}"
+         data-verify-url="{{ url_for('face.verify_face') }}"
+         data-liveness-start="{{ url_for('liveness.start_liveness') }}"
+         data-liveness-check="{{ url_for('liveness.check_liveness') }}"
+         data-liveness-stop="{{ url_for('liveness.stop_liveness') }}"
+         data-gps-capture="{{ url_for('gps.capture_location') }}"
+         data-gps-status="{{ url_for('gps.location_status') }}"
+         data-csrf-token="{{ csrf_token() }}">
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="alert">
+                    </button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- VOTER INFORMATION -->
+
+    <div class="card main-card p-4 mb-4">
+
+        <h3 class="section-title">
+            Welcome, {{ voter.get('full_name', 'Voter') }}!
+        </h3>
+
+        <p class="text-muted">
+            Manage your voter information and biometric verification.
+        </p>
+
+        <hr>
+
+        <h5 class="section-title mb-3">
+            Voter Information
+        </h5>
+
+        <div class="row g-3">
+
+            <div class="col-md-6">
+                <strong>Full Name:</strong>
+                {{ voter.get('full_name', 'N/A') }}
+            </div>
+
+            <div class="col-md-6">
+                <strong>Email:</strong>
+                {{ voter.get('email', 'N/A') }}
+            </div>
+
+            <div class="col-md-6">
+                <strong>Mobile:</strong>
+                {{ voter.get('mobile', 'N/A') }}
+            </div>
+
+            <div class="col-md-6">
+                <strong>Voter ID:</strong>
+                {{ voter.get('epic') or voter.get('epic_normalized', 'N/A') }}
+            </div>
+
+            <div class="col-md-6">
+                <strong>District:</strong>
+                {{ voter.get('district', 'N/A') }}
+            </div>
+
+            <div class="col-md-6">
+                <strong>Constituency:</strong>
+                {{ voter.get('constituency', 'N/A') }}
+            </div>
+
+            <div class="col-md-6">
+                <strong>Account Status:</strong>
+                <span class="badge bg-success">
+                    {{ voter.get('status', 'N/A')|capitalize }}
+                </span>
+            </div>
+
+            <div class="col-md-6">
+                <strong>Face Registration:</strong>
+
+                {% if voter.get('face_embedding') %}
+                    <span class="badge bg-success">Registered</span>
+                {% else %}
+                    <span class="badge bg-warning text-dark">
+                        Not Registered
+                    </span>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+
+    <!-- VIEW CANDIDATES -->
+
+    <div class="card main-card p-4 mb-4">
+
+        <div class="candidate-link-card">
+
+            <div class="row align-items-center g-3">
+
+                <div class="col-md-8">
+                    <h4 class="section-title mb-2">
+                        View Election Candidates
+                    </h4>
+
+                    <p class="text-muted mb-0">
+                        Check candidate photos, political party names,
+                        party symbols and constituency details before voting.
+                    </p>
+                </div>
+
+                <div class="col-md-4 text-md-end">
+                    <a href="{{ url_for('auth.view_candidates') }}"
+                       class="btn btn-primary btn-lg">
+                        View Candidates
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- FACE REGISTRATION -->
+
+    <div class="card main-card p-4 mb-4">
+
+        <h4 class="section-title">Face Registration</h4>
+
+        <p class="text-muted">
+            Register your face using your camera.
+        </p>
+
+        <div class="camera-box">
+
+            <video id="registrationVideo"
+                   autoplay
+                   playsinline
+                   muted
+                   style="display:none;">
+            </video>
+
+            <img id="registrationPreview"
+                 alt="Registered face preview">
+
+            <canvas id="registrationCanvas" style="display:none;"></canvas>
+
+            <div class="mt-3">
+
+                <button type="button"
+                        class="btn btn-primary"
+                        id="startRegistrationCamera">
+                    Start Camera
+                </button>
+
+                <button type="button"
+                        class="btn btn-success"
+                        id="captureRegistration"
+                        disabled>
+                    Capture Face
+                </button>
+
+                <button type="button"
+                        class="btn btn-secondary"
+                        id="retakeRegistration"
+                        style="display:none;">
+                    Retake
+                </button>
+
+            </div>
+
+            <p id="registrationStatus"
+               class="text-muted mt-3 mb-0">
+                Start the camera to register your face.
+            </p>
+
+        </div>
+
+        <form id="faceForm"
+              method="POST"
+              action="{{ url_for('auth.update_face') }}"
+              class="mt-4">
+
+            <input type="hidden"
+                   name="csrf_token"
+                   value="{{ csrf_token() }}">
+
+            <input type="hidden"
+                   name="face_image"
+                   id="registrationImage">
+
+            <button type="submit"
+                    class="btn btn-primary w-100"
+                    id="saveFaceButton"
+                    disabled>
+                Save Face Registration
+            </button>
+
+        </form>
+    </div>
+        <!-- GPS LOCATION -->
+
+    <div class="card main-card p-4 mb-4">
+
+        <h4 class="section-title">
+            GPS Location Tracking
+        </h4>
+
+        <p class="text-muted">
+            Share your current location with your consent.
+            Your browser will ask permission before accessing GPS.
+        </p>
+
+        <div class="gps-info">
+
+            <div class="form-check mb-3">
+
+                <input class="form-check-input"
+                       type="checkbox"
+                       id="gpsConsent">
+
+                <label class="form-check-label"
+                       for="gpsConsent">
+                    I consent to sharing my current location.
+                </label>
+
+            </div>
+
+            <button type="button"
+                    class="btn btn-primary"
+                    id="captureGPS">
+                📍 Capture My Location
+            </button>
+
+            <div id="gpsStatus"
+                 class="alert alert-info mt-3"
+                 style="display:none;"
+                 role="status">
+            </div>
+
+            <div id="gpsResult" class="mt-3">
+
+                <hr>
+
+                <h6 class="section-title">
+                    Captured Location Details
+                </h6>
+
+                <div class="row g-3">
+
+                    <div class="col-md-6">
+                        <div class="gps-label">Latitude</div>
+                        <div class="gps-value" id="gpsLatitude">-</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="gps-label">Longitude</div>
+                        <div class="gps-value" id="gpsLongitude">-</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="gps-label">GPS Accuracy</div>
+                        <div class="gps-value" id="gpsAccuracy">-</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="gps-label">Captured At</div>
+                        <div class="gps-value" id="gpsTime">-</div>
+                    </div>
+
+                </div>
+
+                <a id="googleMapsLink"
+                   href="#"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="btn btn-outline-primary btn-sm mt-3">
+                    View on Google Maps
+                </a>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- LIVENESS DETECTION -->
+
+    <div class="card main-card p-4 mb-4">
+
+        <h4 class="section-title">
+            Live Face Verification & Anti-Spoofing
+        </h4>
+
+        <p class="text-muted">
+            Complete the live face challenges before face matching.
+            Photos and screen images may be rejected by the anti-spoofing model.
+        </p>
+
+        <div class="row g-3 mb-4">
+
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <h6>1. Anti-Spoofing</h6>
+                    <p class="text-muted mb-0">
+                        Checks whether the camera face appears real or fake.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <h6>2. Liveness Challenges</h6>
+                    <p class="text-muted mb-0">
+                        Blink, turn left and turn right.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <h6>3. Face Matching</h6>
+                    <p class="text-muted mb-0">
+                        Compares your camera face with your registered face.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="camera-box">
+
+            <video id="livenessVideo"
+                   autoplay
+                   playsinline
+                   muted>
+            </video>
+
+            <canvas id="livenessCanvas" style="display:none;"></canvas>
+
+            <p class="camera-instructions mt-2">
+                Keep your face visible during the liveness challenges.
+            </p>
+
+            <div class="mt-3">
+
+                <button type="button"
+                        class="btn btn-primary"
+                        id="startLiveness">
+                    Start Liveness Verification
+                </button>
+
+                <button type="button"
+                        class="btn btn-danger"
+                        id="stopLiveness"
+                        disabled>
+                    Stop Camera
+                </button>
+
+            </div>
+
+            <div class="status-box">
+
+                <h6 class="section-title">Verification Status</h6>
+
+                <p id="livenessStatus" class="mb-2">
+                    Not Started
+                </p>
+
+                <p id="challengeText"
+                   class="challenge-text mb-2">
+                    Start the camera to begin.
+                </p>
+
+                <div class="progress mb-2">
+                    <div id="challengeProgress"
+                         class="progress-bar"
+                         role="progressbar"
+                         style="width:0%;">
+                    </div>
+                </div>
+
+                <small id="progressText" class="text-muted">
+                    0 of 3 challenges completed
+                </small>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- FACE MATCHING -->
+
+    <div class="card main-card p-4 mb-4">
+
+        <h4 class="section-title">Face Recognition</h4>
+
+        <p class="text-muted">
+            Face matching is enabled only after successful liveness verification.
+        </p>
+
+        <div id="livenessSuccess"
+             class="alert alert-success"
+             style="display:none;">
+            <strong>Live Verification Successful!</strong>
+            Your face has been captured. You can now verify your registered face.
+        </div>
+
+        <button type="button"
+                class="btn btn-success w-100"
+                id="verifyFaceButton"
+                disabled>
+            Verify My Face
+        </button>
+
+        <div id="resultBox"
+             class="alert mt-3"
+             role="status"
+             aria-live="polite"
+             style="display:none;">
+        </div>
+
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+
+// =====================================================
+// CONFIGURATION AND ELEMENTS
+// =====================================================
+
+const config = document.getElementById("faceConfig");
+
+const faceRegistered =
+    config.dataset.faceRegistered === "true";
+
+const verifyUrl = config.dataset.verifyUrl;
+const startUrl = config.dataset.livenessStart;
+const checkUrl = config.dataset.livenessCheck;
+const stopUrl = config.dataset.livenessStop;
+const gpsCaptureUrl = config.dataset.gpsCapture;
+const gpsStatusUrl = config.dataset.gpsStatus;
+const csrfToken = config.dataset.csrfToken;
+
+function csrfHeaders() {
+    return {
+        "Content-Type": "application/json",
+        "X-CSRFToken": csrfToken
+    };
+}
+
+
+// =====================================================
+// FACE REGISTRATION ELEMENTS
+// =====================================================
+
+const registrationVideo =
+    document.getElementById("registrationVideo");
+
+const registrationCanvas =
+    document.getElementById("registrationCanvas");
+
+const registrationPreview =
+    document.getElementById("registrationPreview");
+
+const registrationImage =
+    document.getElementById("registrationImage");
+
+const startRegistrationCamera =
+    document.getElementById("startRegistrationCamera");
+
+const captureRegistration =
+    document.getElementById("captureRegistration");
+
+const retakeRegistration =
+    document.getElementById("retakeRegistration");
+
+const saveFaceButton =
+    document.getElementById("saveFaceButton");
+
+const registrationStatus =
+    document.getElementById("registrationStatus");
+
+let registrationStream = null;
+
+
+// =====================================================
+// FACE REGISTRATION CAMERA
+// =====================================================
+
+async function startRegistrationCameraFunction() {
+
+    try {
+
+        registrationStream =
+            await navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: "user",
+                    width: { ideal: 640 },
+                    height: { ideal: 480 }
+                },
+                audio: false
+            });
+
+        registrationVideo.srcObject = registrationStream;
+        registrationVideo.style.display = "block";
+        registrationPreview.style.display = "none";
+
+        await registrationVideo.play();
+
+        captureRegistration.disabled = false;
+        startRegistrationCamera.disabled = true;
+
+        registrationStatus.textContent =
+            "Camera started. Look directly at the camera.";
+
+    } catch (error) {
+
+        console.error("Registration camera error:", error);
+
+        registrationStatus.textContent =
+            "Unable to access camera: " + error.message;
+
+    }
+
+}
+
+
+function stopRegistrationCamera() {
+
+    if (registrationStream) {
+
+        registrationStream.getTracks().forEach(track => track.stop());
+        registrationStream = null;
+
+    }
+
+    registrationVideo.srcObject = null;
+    registrationVideo.style.display = "none";
+
+}
+
+
+startRegistrationCamera.addEventListener(
+    "click",
+    startRegistrationCameraFunction
+);
+
+
+captureRegistration.addEventListener("click", () => {
+
+    if (
+        !registrationStream ||
+        !registrationVideo.videoWidth ||
+        !registrationVideo.videoHeight
+    ) {
+
+        registrationStatus.textContent =
+            "Camera frame is not available.";
+
+        return;
+
+    }
+
+    registrationCanvas.width =
+        registrationVideo.videoWidth;
+
+    registrationCanvas.height =
+        registrationVideo.videoHeight;
+
+    const context =
+        registrationCanvas.getContext("2d");
+
+    context.drawImage(
+        registrationVideo,
+        0,
+        0,
+        registrationCanvas.width,
+        registrationCanvas.height
+    );
+
+    const image =
+        registrationCanvas.toDataURL("image/jpeg", 0.95);
+
+    if (!image || image.length < 1000) {
+
+        registrationStatus.textContent =
+            "Unable to capture image. Please try again.";
+
+        return;
+
+    }
+
+    registrationImage.value = image;
+
+    registrationPreview.src = image;
+    registrationPreview.style.display = "block";
+
+    stopRegistrationCamera();
+
+    captureRegistration.disabled = true;
+    startRegistrationCamera.disabled = false;
+
+    retakeRegistration.style.display = "inline-block";
+    saveFaceButton.disabled = false;
+
+    registrationStatus.textContent =
+        "Face captured successfully. Click Save Face Registration.";
+
+});
+
+
+retakeRegistration.addEventListener("click", () => {
+
+    registrationImage.value = "";
+
+    registrationPreview.src = "";
+    registrationPreview.style.display = "none";
+
+    retakeRegistration.style.display = "none";
+
+    saveFaceButton.disabled = true;
+    captureRegistration.disabled = true;
+
+    startRegistrationCamera.disabled = false;
+
+    registrationStatus.textContent =
+        "Start camera again to capture your face.";
+
+});
+
+
+document.getElementById("faceForm").addEventListener(
+    "submit",
+    event => {
+
+        if (!registrationImage.value) {
+
+            event.preventDefault();
+
+            alert("Please capture your face first.");
+
+        }
+
+    }
+);
+// =====================================================
+// GPS LOCATION TRACKING
+// =====================================================
+
+const gpsConsent =
+    document.getElementById("gpsConsent");
+
+const captureGPS =
+    document.getElementById("captureGPS");
+
+const gpsStatus =
+    document.getElementById("gpsStatus");
+
+const gpsResult =
+    document.getElementById("gpsResult");
+
+const gpsLatitude =
+    document.getElementById("gpsLatitude");
+
+const gpsLongitude =
+    document.getElementById("gpsLongitude");
+
+const gpsAccuracy =
+    document.getElementById("gpsAccuracy");
+
+const gpsTime =
+    document.getElementById("gpsTime");
+
+const googleMapsLink =
+    document.getElementById("googleMapsLink");
+
+
+function showGPSStatus(message, type = "info") {
+
+    gpsStatus.style.display = "block";
+
+    gpsStatus.className =
+        "alert alert-" + type + " mt-3";
+
+    gpsStatus.textContent = message;
+
+}
+
+
+// =====================================================
+// CAPTURE GPS LOCATION
+// =====================================================
+
+captureGPS.addEventListener("click", () => {
+
+    if (!gpsConsent.checked) {
+
+        showGPSStatus(
+            "Please provide consent before sharing your location.",
+            "warning"
+        );
+
+        return;
+
+    }
+
+    if (!navigator.geolocation) {
+
+        showGPSStatus(
+            "Geolocation is not supported by your browser.",
+            "danger"
+        );
+
+        return;
+
+    }
+
+    captureGPS.disabled = true;
+
+    showGPSStatus(
+        "Getting your current location...",
+        "info"
+    );
+
+    navigator.geolocation.getCurrentPosition(
+
+        async position => {
+
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+            const accuracy = position.coords.accuracy;
+
+            // Display captured location
+
+            gpsLatitude.textContent = latitude;
+            gpsLongitude.textContent = longitude;
+
+            gpsAccuracy.textContent =
+                accuracy.toFixed(2) + " meters";
+
+            gpsTime.textContent =
+                new Date(position.timestamp).toLocaleString();
+
+            googleMapsLink.href =
+                "https://www.google.com/maps?q=" +
+                latitude + "," + longitude;
+
+            gpsResult.style.display = "block";
+
+            try {
+
+                const response = await fetch(gpsCaptureUrl, {
+
+                    method: "POST",
+
+                    headers: csrfHeaders(),
+
+                    body: JSON.stringify({
+
+                        latitude: latitude,
+                        longitude: longitude,
+                        accuracy: accuracy,
+
+                        // IMPORTANT: Send user's consent to backend
+                        consent: gpsConsent.checked
+
+                    })
+
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+
+                    throw new Error(
+                        data.message || "Unable to save GPS location."
+                    );
+
+                }
+
+                // Update values from backend response
+
+                if (data.location) {
+
+                    gpsLatitude.textContent =
+                        data.location.latitude;
+
+                    gpsLongitude.textContent =
+                        data.location.longitude;
+
+                    gpsAccuracy.textContent =
+                        data.location.accuracy_meters + " meters";
+
+                    gpsTime.textContent =
+                        data.location.captured_at
+                            ? new Date(
+                                data.location.captured_at
+                              ).toLocaleString()
+                            : new Date(
+                                position.timestamp
+                              ).toLocaleString();
+
+                }
+
+                showGPSStatus(
+                    data.message ||
+                    "Location captured and saved successfully.",
+                    "success"
+                );
+
+            } catch (error) {
+
+                console.error("GPS save error:", error);
+
+                showGPSStatus(
+                    "Location obtained, but could not be saved: " +
+                    error.message,
+                    "warning"
+                );
+
+            } finally {
+
+                captureGPS.disabled = false;
+
+            }
+
+        },
+
+        error => {
+
+            console.error("GPS error:", error);
+
+            let message = "Unable to get location.";
+
+            if (error.code === error.PERMISSION_DENIED) {
+
+                message = "Location permission was denied.";
+
+            } else if (error.code === error.POSITION_UNAVAILABLE) {
+
+                message = "Location information is unavailable.";
+
+            } else if (error.code === error.TIMEOUT) {
+
+                message = "Location request timed out. Try again.";
+
+            }
+
+            showGPSStatus(message, "danger");
+
+            captureGPS.disabled = false;
+
+        },
+
+        {
+            enableHighAccuracy: true,
+            timeout: 15000,
+            maximumAge: 0
+        }
+
+    );
+
+});
+
+
+// =====================================================
+// GPS LOCATION STATUS
+// =====================================================
+
+async function loadGPSStatus() {
+
+    try {
+
+        const response = await fetch(gpsStatusUrl);
+
+        if (!response.ok) {
+            return;
+        }
+
+        const data = await response.json();
+
+        if (data.success && data.location) {
+
+            const location = data.location;
+
+            if (
+                location.latitude !== undefined &&
+                location.longitude !== undefined
+            ) {
+
+                gpsLatitude.textContent =
+                    location.latitude;
+
+                gpsLongitude.textContent =
+                    location.longitude;
+
+                gpsAccuracy.textContent =
+                    location.accuracy_meters !== undefined
+                        ? location.accuracy_meters + " meters"
+                        : "Not available";
+
+                gpsTime.textContent =
+                    location.captured_at
+                        ? new Date(
+                            location.captured_at
+                          ).toLocaleString()
+                        : "Previously captured";
+
+                googleMapsLink.href =
+                    "https://www.google.com/maps?q=" +
+                    location.latitude + "," +
+                    location.longitude;
+
+                gpsResult.style.display = "block";
+
+            }
+
+        }
+
+    } catch (error) {
+
+        console.error("GPS status error:", error);
+
+    }
+
+}
+
+loadGPSStatus();
+
+
+// =====================================================
+// LIVENESS DETECTION ELEMENTS
+// =====================================================
+
+const livenessVideo =
+    document.getElementById("livenessVideo");
+
+const livenessCanvas =
+    document.getElementById("livenessCanvas");
+
+const startLiveness =
+    document.getElementById("startLiveness");
+
+const stopLiveness =
+    document.getElementById("stopLiveness");
+
+const livenessStatus =
+    document.getElementById("livenessStatus");
+
+const challengeText =
+    document.getElementById("challengeText");
+
+const challengeProgress =
+    document.getElementById("challengeProgress");
+
+const progressText =
+    document.getElementById("progressText");
+
+const livenessSuccess =
+    document.getElementById("livenessSuccess");
+
+const verifyFaceButton =
+    document.getElementById("verifyFaceButton");
+
+const resultBox =
+    document.getElementById("resultBox");
+
+
+let livenessStream = null;
+let livenessToken = null;
+let livenessRunning = false;
+let livenessPassed = false;
+let requestInProgress = false;
+let verificationImage = "";
+
+
+// =====================================================
+// UPDATE LIVENESS UI
+// =====================================================
+
+function updateLivenessUI(result) {
+
+    const status = result.status || "PROCESSING";
+    const challenge = result.challenge || status;
+
+    livenessStatus.textContent =
+        result.message || status.replaceAll("_", " ");
+
+    if (
+        ["SPOOF_DETECTED", "MULTIPLE_FACES", "ERROR"].includes(status)
+    ) {
+
+        livenessStatus.className = "text-danger fw-bold";
+
+        challengeText.textContent =
+            result.message || "Liveness verification failed.";
+
+        return;
+
+    }
+
+    if (
+        status === "NO_FACE" ||
+        status === "SPOOF_CHECK_PENDING"
+    ) {
+
+        livenessStatus.className = "text-warning fw-bold";
+
+        challengeText.textContent =
+            result.message || "Keep your face in front of the camera.";
+
+        return;
+
+    }
+
+    if (status === "LIVE_VERIFIED") {
+
+        challengeText.textContent =
+            "All liveness challenges completed successfully.";
+
+        challengeProgress.style.width = "100%";
+
+        progressText.textContent =
+            "3 of 3 challenges completed";
+
+        livenessStatus.className = "text-success fw-bold";
+
+        return;
+
+    }
+
+    if (status === "RETURN_CENTER") {
+
+        challengeText.textContent =
+            "Please look straight at the camera and hold still.";
+
+    } else if (challenge === "BLINK") {
+
+        challengeText.textContent =
+            "Please blink your eyes.";
+
+    } else if (challenge === "TURN_LEFT") {
+
+        challengeText.textContent =
+            "Please turn your head to the LEFT.";
+
+    } else if (challenge === "TURN_RIGHT") {
+
+        challengeText.textContent =
+            "Please turn your head to the RIGHT.";
+
+    } else {
+
+        challengeText.textContent =
+            result.message || "Follow the liveness instruction.";
+
+    }
+
+    const completed =
+        Number(
+            result.completed_challenges ??
+            result.completed ??
+            result.center_frames ??
+            0
+        );
+
+    const total =
+        Number(result.total_challenges ?? result.total ?? 3);
+
+    const percentage =
+        Math.min(100, (completed / Math.max(total, 1)) * 100);
+
+    challengeProgress.style.width =
+        percentage + "%";
+
+    progressText.textContent =
+        completed + " of " + total + " challenges completed";
+
+}
+
+
+// =====================================================
+// START LIVENESS SESSION AND CAMERA
+// =====================================================
+
+startLiveness.addEventListener("click", async () => {
+
+    if (!faceRegistered) {
+
+        livenessStatus.textContent =
+            "Please register your face first.";
+
+        return;
+
+    }
+
+    startLiveness.disabled = true;
+    stopLiveness.disabled = true;
+    verifyFaceButton.disabled = true;
+
+    livenessPassed = false;
+    verificationImage = "";
+
+    livenessSuccess.style.display = "none";
+    resultBox.style.display = "none";
+
+    livenessStatus.className = "text-info fw-bold";
+
+    livenessStatus.textContent =
+        "Starting liveness verification...";
+
+    try {
+
+        if (
+            !navigator.mediaDevices ||
+            !navigator.mediaDevices.getUserMedia
+        ) {
+
+            throw new Error(
+                "Camera access is unavailable. Use HTTPS or localhost and a supported browser."
+            );
+
+        }
+
+        const startResponse = await fetch(startUrl, {
+
+            method: "POST",
+
+            headers: csrfHeaders(),
+
+            body: JSON.stringify({})
+
+        });
+
+        const startResult = await startResponse.json();
+
+        if (!startResponse.ok || !startResult.success) {
+
+            throw new Error(
+                startResult.message ||
+                "Unable to start liveness session."
+            );
+
+        }
+
+        livenessStream =
+            await navigator.mediaDevices.getUserMedia({
+
+                video: {
+                    facingMode: "user",
+                    width: { ideal: 640 },
+                    height: { ideal: 480 }
+                },
+
+                audio: false
+
+            });
+
+        livenessVideo.srcObject = livenessStream;
+
+        livenessVideo.style.display = "block";
+
+        await livenessVideo.play();
+
+        livenessRunning = true;
+        requestInProgress = false;
+
+        stopLiveness.disabled = false;
+
+        livenessStatus.className = "text-info fw-bold";
+
+        livenessStatus.textContent =
+            "Camera started. Follow the instructions.";
+
+        challengeText.textContent =
+            "Keep your face in front of the camera.";
+
+        processLivenessFrames();
+
+    } catch (error) {
+
+        console.error("Liveness start error:", error);
+
+        livenessStatus.className = "text-danger fw-bold";
+
+        livenessStatus.textContent =
+            error.message || "Unable to start camera.";
+
+        await stopLivenessOnServer();
+
+        stopLivenessCamera(true);
+
+    }
+
+});
+
+
+// =====================================================
+// PROCESS CAMERA FRAMES
+// =====================================================
+
+async function processLivenessFrames() {
+
+    if (!livenessRunning || requestInProgress) {
+        return;
+    }
+
+    if (!livenessVideo.videoWidth) {
+
+        setTimeout(processLivenessFrames, 200);
+
+        return;
+
+    }
+
+    requestInProgress = true;
+
+    try {
+
+        livenessCanvas.width = 640;
+        livenessCanvas.height = 480;
+
+        livenessCanvas.getContext("2d").drawImage(
+            livenessVideo,
+            0,
+            0,
+            640,
+            480
+        );
+
+        const frame = livenessCanvas.toDataURL(
+            "image/jpeg",
+            0.65
+        );
+
+        const response = await fetch(checkUrl, {
+
+            method: "POST",
+
+            headers: csrfHeaders(),
+
+            body: JSON.stringify({
+                frame: frame
+            })
+
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+
+            throw new Error(
+                result.message || "Liveness check failed."
+            );
+
+        }
+
+        updateLivenessUI(result);
+
+        // LIVENESS SUCCESS
+
+        if (result.status === "LIVE_VERIFIED") {
+
+            livenessRunning = false;
+
+            if (
+                !livenessVideo.videoWidth ||
+                !livenessVideo.videoHeight
+            ) {
+
+                throw new Error(
+                    "Unable to capture the verified camera frame. Please try again."
+                );
+
+            }
+
+            livenessCanvas.width =
+                livenessVideo.videoWidth;
+
+            livenessCanvas.height =
+                livenessVideo.videoHeight;
+
+            livenessCanvas.getContext("2d").drawImage(
+                livenessVideo,
+                0,
+                0,
+                livenessCanvas.width,
+                livenessCanvas.height
+            );
+
+            verificationImage =
+                livenessCanvas.toDataURL("image/jpeg", 0.90);
+
+            livenessPassed = true;
+
+            verifyFaceButton.disabled = false;
+
+            livenessSuccess.style.display = "block";
+
+            // Stop the camera only.
+            // Do not call the server /stop endpoint here.
+
+            stopLivenessCamera(false);
+
+            livenessStatus.className =
+                "text-success fw-bold";
+
+            livenessStatus.textContent =
+                "Liveness verified. Now click Verify My Face.";
+
+            startLiveness.disabled = true;
+
+            return;
+
+        }
+
+        // FAILED LIVENESS
+
+        if (
+            result.status === "SPOOF_DETECTED" ||
+            result.status === "MULTIPLE_FACES"
+        ) {
+
+            livenessRunning = false;
+
+            await stopLivenessOnServer();
+
+            stopLivenessCamera(true);
+
+            return;
+
+        }
+
+        if (result.status === "SESSION_EXPIRED") {
+
+            throw new Error(result.message);
+
+        }
+            } catch (error) {
+
+        console.error("Liveness check error:", error);
+
+        livenessStatus.textContent = error.message;
+
+        livenessStatus.className = "text-danger fw-bold";
+
+        livenessRunning = false;
+
+        await stopLivenessOnServer();
+
+        stopLivenessCamera(true);
+
+        return;
+
+    } finally {
+
+        requestInProgress = false;
+
+    }
+
+    if (livenessRunning) {
+
+        setTimeout(processLivenessFrames, 300);
+
+    }
+
+}
+
+
+// =====================================================
+// STOP SERVER LIVENESS SESSION
+// Do not call after LIVE_VERIFIED.
+// =====================================================
+
+async function stopLivenessOnServer() {
+
+    try {
+
+        await fetch(stopUrl, {
+
+            method: "POST",
+
+            headers: csrfHeaders(),
+
+            body: JSON.stringify({})
+
+        });
+
+    } catch (error) {
+
+        console.error(
+            "Unable to stop server session:",
+            error
+        );
+
+    }
+
+}
+
+
+// =====================================================
+// STOP CAMERA
+// =====================================================
+
+function stopLivenessCamera(resetButton = true) {
+
+    livenessRunning = false;
+
+    if (livenessStream) {
+
+        livenessStream.getTracks().forEach(
+            track => track.stop()
+        );
+
+        livenessStream = null;
+
+    }
+
+    livenessVideo.srcObject = null;
+
+    livenessVideo.style.display = "none";
+
+    stopLiveness.disabled = true;
+
+    if (resetButton && !livenessPassed) {
+
+        startLiveness.disabled = false;
+
+    }
+
+}
+
+
+// =====================================================
+// MANUAL STOP
+// =====================================================
+
+stopLiveness.addEventListener("click", async () => {
+
+    livenessRunning = false;
+
+    await stopLivenessOnServer();
+
+    stopLivenessCamera(true);
+
+    livenessPassed = false;
+
+    verificationImage = "";
+
+    verifyFaceButton.disabled = true;
+
+    livenessSuccess.style.display = "none";
+
+    livenessStatus.textContent =
+        "Liveness session stopped.";
+
+    challengeText.textContent =
+        "Start again to verify your live face.";
+
+    startLiveness.disabled = false;
+
+});
+
+
+// =====================================================
+// FACE VERIFICATION
+// =====================================================
+
+verifyFaceButton.addEventListener("click", async () => {
+
+    if (!livenessPassed || !verificationImage) {
+
+        alert("Complete liveness verification first.");
+
+        return;
+
+    }
+
+    if (!faceRegistered) {
+
+        alert("Please register your face first.");
+
+        return;
+
+    }
+
+    verifyFaceButton.disabled = true;
+
+    verifyFaceButton.textContent = "Verifying Face...";
+
+    resultBox.style.display = "block";
+
+    resultBox.className = "alert alert-info mt-3";
+
+    resultBox.textContent =
+        "Comparing your face with registered face...";
+
+    try {
+
+        const response = await fetch(verifyUrl, {
+
+            method: "POST",
+
+            headers: csrfHeaders(),
+
+            body: JSON.stringify({
+
+                face_image: verificationImage
+
+            })
+
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.matched) {
+
+            resultBox.className =
+                "alert alert-success mt-3";
+
+            resultBox.textContent =
+                result.message +
+                " Distance: " + result.distance;
+
+            livenessPassed = false;
+
+            verificationImage = "";
+
+            livenessStatus.textContent =
+                "Face verification successful.";
+
+        } else {
+
+            resultBox.className =
+                "alert alert-danger mt-3";
+
+            const distanceText =
+                result.distance !== undefined
+                    ? " Distance: " + result.distance
+                    : "";
+
+            const thresholdText =
+                result.threshold !== undefined
+                    ? " | Required threshold: " + result.threshold
+                    : "";
+
+            resultBox.textContent =
+                (result.message || "Face verification failed.") +
+                distanceText +
+                thresholdText;
+
+            livenessPassed = false;
+
+            verificationImage = "";
+
+            verifyFaceButton.disabled = true;
+
+            challengeText.textContent =
+                "Face did not match. Restart liveness verification.";
+
+            startLiveness.disabled = false;
+
+        }
+
+    } catch (error) {
+
+        console.error("Face verification error:", error);
+
+        resultBox.className =
+            "alert alert-danger mt-3";
+
+        resultBox.textContent =
+            "Unable to connect to verification server.";
+
+        livenessPassed = false;
+
+        verificationImage = "";
+
+    } finally {
+
+        verifyFaceButton.textContent = "Verify My Face";
+
+        verifyFaceButton.disabled =
+            !livenessPassed || !verificationImage;
+
+    }
+
+});
+
+
+// =====================================================
+// INITIAL FACE STATE
+// =====================================================
+
+if (!faceRegistered) {
+
+    startLiveness.disabled = true;
+
+    livenessStatus.textContent =
+        "Face registration is required first.";
+
+    challengeText.textContent =
+        "Please complete face registration before liveness verification.";
+
+}
+
+
+// =====================================================
+// CLEANUP CAMERAS WHEN PAGE CLOSES
+// =====================================================
+
+window.addEventListener("beforeunload", () => {
+
+    stopRegistrationCamera();
+
+    stopLivenessCamera(false);
+
+});
+
+</script>
+
+</body>
+</html>

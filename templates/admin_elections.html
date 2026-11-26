@@ -1,0 +1,377 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Election Management | SmartVote</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f3f5fa;
+            color: #263247;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 1250px;
+            margin: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+        }
+
+        h1 {
+            font-size: 27px;
+            margin-bottom: 7px;
+        }
+
+        .subtitle {
+            color: #718096;
+            font-size: 14px;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-block;
+            border: none;
+            border-radius: 7px;
+            padding: 11px 16px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+            white-space: nowrap;
+        }
+
+        .primary {
+            background: #3157d5;
+        }
+
+        .primary:hover {
+            background: #2445b5;
+        }
+
+        .back {
+            background: #64748b;
+        }
+
+        .back:hover {
+            background: #475569;
+        }
+
+        .edit {
+            background: #e9a326;
+        }
+
+        .delete {
+            background: #dc3545;
+        }
+
+        .archive {
+            background: #64748b;
+        }
+
+        .manage {
+            background: #0d9488;
+        }
+
+        .manage:hover {
+            background: #0f766e;
+        }
+
+        .message {
+            padding: 13px 16px;
+            margin-bottom: 15px;
+            border-radius: 7px;
+            background: #e0f2e9;
+            color: #176b43;
+        }
+
+        .message.error {
+            background: #fde8e8;
+            color: #a52626;
+        }
+
+        .table-card {
+            background: white;
+            border-radius: 12px;
+            padding: 22px;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.05);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 950px;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 15px 12px;
+            border-bottom: 1px solid #edf0f5;
+            font-size: 13px;
+        }
+
+        th {
+            color: #64748b;
+            background: #f8f9fc;
+        }
+
+        td {
+            line-height: 1.6;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: capitalize;
+        }
+
+        .active {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .upcoming {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .completed {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .archived {
+            background: #fce7f3;
+            color: #9d174d;
+        }
+
+        .actions {
+            display: flex;
+            gap: 7px;
+            flex-wrap: wrap;
+            min-width: 210px;
+        }
+
+        .actions .btn {
+            padding: 8px 10px;
+            font-size: 11px;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 45px 15px;
+            color: #718096;
+        }
+
+        .empty h3 {
+            color: #334155;
+            margin-bottom: 8px;
+        }
+
+        form {
+            display: inline;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- Page Header -->
+    <div class="header">
+
+        <div>
+            <h1>Election Management</h1>
+            <p class="subtitle">
+                Create and manage your elections
+            </p>
+        </div>
+
+        <div class="header-buttons">
+
+            <!-- Back to Admin Dashboard -->
+            <a href="{{ url_for('admin.dashboard') }}"
+               class="btn back">
+                &#8592; Back to Dashboard
+            </a>
+
+            <!-- Create Election -->
+            <a href="{{ url_for('election.create_election') }}"
+               class="btn primary">
+                + Create New Election
+            </a>
+
+        </div>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="message {{ 'error' if category == 'error' else '' }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endwith %}
+
+    <!-- Election Table -->
+    <div class="table-card">
+
+        {% if elections %}
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>Election</th>
+                    <th>Description</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for election in elections %}
+
+                <tr>
+
+                    <td>
+                        <strong>{{ election.title }}</strong>
+                    </td>
+
+                    <td>
+                        {{ election.description or 'No description' }}
+                    </td>
+
+                    <td>
+                        {{ election.start_at.strftime('%d-%m-%Y %I:%M %p') }}
+                    </td>
+
+                    <td>
+                        {{ election.end_at.strftime('%d-%m-%Y %I:%M %p') }}
+                    </td>
+
+                    <td>
+                        <span class="status {{ election.display_status }}">
+                            {{ election.display_status }}
+                        </span>
+                    </td>
+
+                    <td>
+
+                        <div class="actions">
+
+                            <!-- Manage Candidates -->
+                            <a class="btn manage"
+                               href="{{ url_for('election.list_candidates', election_id=election._id) }}">
+                                Manage Candidates
+                            </a>
+
+                            {% if election.display_status != 'archived' %}
+
+                            <!-- Edit Election -->
+                            <a class="btn edit"
+                               href="{{ url_for('election.edit_election', election_id=election._id) }}">
+                                Edit
+                            </a>
+
+                            <!-- Archive Election -->
+                            <form method="POST"
+                                  action="{{ url_for('election.archive_election', election_id=election._id) }}"
+                                  onsubmit="return confirm('Are you sure you want to archive this election?');">
+
+                                <input type="hidden"
+                                       name="csrf_token"
+                                       value="{{ csrf_token() }}">
+
+                                <button type="submit" class="btn archive">
+                                    Archive
+                                </button>
+
+                            </form>
+
+                            {% endif %}
+
+                            <!-- Delete Election -->
+                            <form method="POST"
+                                  action="{{ url_for('election.delete_election', election_id=election._id) }}"
+                                  onsubmit="return confirm('Are you sure you want to delete this election?');">
+
+                                <input type="hidden"
+                                       name="csrf_token"
+                                       value="{{ csrf_token() }}">
+
+                                <button type="submit" class="btn delete">
+                                    Delete
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+        {% else %}
+
+        <div class="empty">
+            <h3>No Elections Available</h3>
+            <p>
+                Click on Create New Election to add your first election.
+            </p>
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+</body>
+</html>
